@@ -1,0 +1,281 @@
+---
+title: "Rodgers_Assignment1"
+author: "Mary E. Rodgers"
+date: '2023-0-01'
+output: 
+
+  html_document: 
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# **Introduction**
+
+This markdown shows the process of visualizing numeric and categorical data in R from a CSV file on the local machine. The analysis we will do is visualizing the demographics of the data. The purpose of this is to see if this data set aligns with trends seen autism research. Currently, about one in fourty-four children in the United States are diagnosed with Autism Spectrum Disorder (ASD; Maenner et al., 2021). A diagnosis can occur in any ethnicity or gender (Maenner et al., 2021). However, the seminal description of ASD was focused on white males (Kanner, 1943) and has skewed modern understanding and assessment of autism. This leads to under diagnosis and late diagnosis of females with ASD (Robinson et al., 2013). This disparity is seen across ethnic groups as well (Hoangami, 2021).
+
+# **Research Questions**
+
+Our primary research question are: 1. Do males receive higher QChat scores than females on a caregiver reported app? 2. What are the demographics of the respondents to an app that screens for ASD?
+
+These research questions will be explored through the visualization of the data.
+
+# **Data**
+
+The C The data we are using comes from autism screening data for toddlers from kaggle. This data was created through participants using an app to screen for autism in toddlers, and is self-report from caregivers. There were 1054 instances collected in the app, across 18 attributes. Specifically, we will look at: Age, QChat score, Sex, Ethnicity, and ASD Traits.Age and QChat score are numeric variables.Sex, Ethnicity, and ASD Traits are categorical variables.A QChat score higher than 3 indicates a potential for ASD traits.
+
+Source: <https://www.kaggle.com/datasets/fabdelja/autism-screening-for-toddlers?resource=download>
+
+# **Data Wrangling**
+
+## *Preparing your data*
+
+### Preparing R
+
+1.  Clear the global environment
+
+```{r}
+rm(list=ls(all=TRUE)) 
+# Alternatively, you can select the 'sweep' button in the global environment
+```
+
+![](images/sweep.PNG){width="84"}
+
+2.  Call in the necessary R packages: tidyverse, ggplot2, dplyr
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+# if an error occurs, make sure the packages are installed.
+```
+
+### Importing your Data
+
+1.  Download the CSV titled "autism_screening_data_for_toddler".
+
+    [Kaggle Data Set](https://www.kaggle.com/datasets/fabdelja/autism-screening-for-toddlers?resource=download)
+
+2.  Save the file with your R software so that it imports properly.
+
+3.  Call in the data frame Note: this part isn't actually necessary, but let's keep it for later
+
+```{r}
+autism_df <- read.csv("autism_screening_data_for_toddlers.csv", header = TRUE)
+# our data frame is now called "autism_df"
+```
+
+4.  Create a tibble from the data frame
+
+```{r}
+autism_tib <- read_csv("autism_screening_data_for_toddlers.csv") 
+# our tibble is now called "autism_tib"
+```
+
+### Cleaning your Data
+
+1.  Enable messages and warnings about your code
+2.  Call in the tibble.
+3.  Rename columns that have poor formatting.
+4.  Select the columns you want.
+5.  Convert empty cells to NA.
+6.  Convert missing data cells denoted by an asterisk to NA.
+7.  Display the structure.
+
+```{r message=TRUE, warning=TRUE}
+# enables messages and warnings about your code
+autism_tib <- read_csv("autism_screening_data_for_toddlers.csv") %>% # creates your tibble from the csv
+  rename(Age = "Age_Mons",
+         Qchat = "Qchat-10-Score",
+         Traits = "Class/ASD Traits") %>%
+  select (Age, Qchat, Sex, Ethnicity, Traits) %>% # calls in the columns you want
+  na_if("") %>% # converts empty cells to NA
+  na_if("*") # this converts missing data cells denoted by an asterisk to NA
+str(autism_tib) 
+  # this displays the structure of R objects, in this case, our clean tibble
+```
+
+#### Visually check your data
+
+1.  Look at the tibble to make sure everything looks right
+
+```{r}
+print(autism_tib)
+```
+
+# **Analysis**
+
+## *Visualizing your Numeric Data*
+
+### Simple Scatter Plot
+
+1.  Create a simple scatter plot from your Age and QChat variables
+
+```{r}
+ggplot(data = autism_tib) +
+  geom_point(mapping = aes(x = Age, y = Qchat)) 
+# This puts age in months on the X axis, and the Qchat score on the Y axis
+```
+
+The results of the scatter plot indicate that there is no correlation between age in months and QChat scores.
+
+#### Axis Labels and Titles
+
+1.  Label the X and Y axis and give it a title
+
+```{r}
+ggplot(data = autism_tib) +
+  geom_point(mapping = aes(x = Age, y = Qchat)) +
+    ggtitle("Age and Qchat Score Scatter Plot") # Title
+ylab("Qchat Score") # y axis label
+xlab("Age in Months") # x axis label
+```
+
+Labeling the axis and providing a title makes interpretation easier.
+
+#### Adjusting color, size, and shape
+
+1.  Change the color, size, and shape of the data on the scatter plot
+
+```{r}
+ggplot(data = autism_tib) +
+  geom_point(mapping = aes(x = Age, y = Qchat), color = "purple", size = 1, shape = 7) +
+    ggtitle("Age and Qchat Score Scatter Plot (Color)") # Title
+ylab("Qchat Score") # y axis label
+xlab("Age in Months") # x axis label
+
+#Look online to find the options for color, size and shape
+```
+
+Changing the visualization of the scatter plot made interpretation easier.
+
+### Data Smoothing
+
+1.  Smooth the data to look at means and confidence intervals
+
+```{r}
+ggplot(data = autism_tib) +
+  geom_smooth(mapping = aes(x = Age, y = Qchat)) +
+    ggtitle("Age and Qchat Score Smoothed Scatter Plot") # Title
+ylab("Qchat Score") # y axis label
+xlab("Age in Months") # x axis label
+```
+
+The confidence interval shows a normal distribution between age and Qchat score.
+
+### Box Plots
+
+1.  Make a box plot of the Qchat scores
+
+```{r}
+ggplot(autism_tib, aes(x = "", y = Qchat)) +
+  geom_boxplot(fill = "gray", alpha = 0.1) +  
+   ggtitle("Age and Qchat Score Box Plot") # Title# this indicates the fill color and transparency
+  ylab("Distribution of Qchat scores")
+  # remember, this labels your axis
+
+```
+
+### Histograms
+
+1.  Make a histogram of Age
+
+```{r}
+ggplot(autism_tib, aes(Age)) +   
+  geom_histogram(binwidth = 0.5, col = "black", fill = "black") +  
+  xlab("Age in Months") +
+  ylab("Frequency") +
+  ggtitle("Histogram Age")
+```
+
+## *Visualizing your Categorical Data*
+
+### One Variable Bar Charts
+
+1.  Create a histogram from your Ethnicity category
+
+```{r}
+ggplot(data = autism_tib) +
+  geom_bar(mapping = aes(x=Ethnicity)) +
+  ggtitle("Age of Participants")
+
+```
+
+#### Flip Coordinates
+
+1.  Create a histogram from your ethnicity category and flip the coordinates
+
+```{r}
+ggplot(data = autism_tib) +
+  geom_bar(mapping = aes(x=Ethnicity)) +
+  coord_flip() +
+  ggtitle("Ethnicity of Participants")
+# Here we flippedd the X and Y coordinates so that we can read the data easier
+```
+
+The results of the Ethnicity of Particpants indicate that most respondents were White European, Middle Eastern, or Asian.
+
+### Multiple Comparisons
+
+1.  Create a Bar chart for the count of gender
+
+```{r}
+ggplot(data = autism_tib) +
+  geom_bar(mapping = aes(x=Sex)) +
+  coord_flip() +
+  ggtitle("Count of Gender")
+```
+
+The results of the Count of Gender bar chart indicates that most respondents were filling out the screening app for their male children.
+
+2.  Create a Box plot for gender and qchat
+
+```{r}
+ggplot(autism_tib, aes(x = Sex, y = Qchat)) +
+  geom_boxplot(fill = "gray", alpha = 0.1) +
+  ylab("Distribution of Qchat scores") +
+ ggtitle("Gender and Qchat Score Box Plot")
+```
+
+The results of the QChat and Gender box plots indicates that males received a higher QChat score in relation to females.
+
+3.  Create a Box plot for ethnicity and Qchat
+
+```{r}
+ggplot(autism_tib, aes(x = Ethnicity, y = Qchat)) +
+  geom_boxplot(fill = "gray", alpha = 0.1) +
+  ylab("Distribution of Qchat scores") +
+ ggtitle("Ethnicity and Qchat Score Box Plot")
+```
+
+4.  Create a Box plot for ethnicity and Qchat and flip the coordinates so it is easier to interpret
+
+```{r}
+ggplot(autism_tib, aes(x = Ethnicity, y = Qchat)) +
+  geom_boxplot(fill = "gray", alpha = 0.1) +
+   coord_flip() +
+  ylab("Distribution of Qchat scores") +
+ ggtitle("Ethnicity and Qchat Score Box Plot")
+```
+
+The results of the Ethnicity and QChat box plots indicate that Latino's reported their children as having the highest traits.
+
+# **Discussion**
+
+The results of this analysis provided information that could answer our research questions. In response to Research Question one, it does appear that males receive higher QChat scores than females on a caregiver reported app. This is supported by the distribution of QChat scores box plot concerning gender. It is worth nothing that a majority of respondents were doing so for their male children, which may have skewed the data as there were not as many QChat scores provided for caregivers of female children.
+
+In response to research question two, the respondents to an app that screens for ASD were primarily screening toddlers over 30 months of age (age histogram) and were likely to be White European, Middle Eastern, or Asian (ethnicity histogram). There were a low number of respondents for Black families, coinciding with previous research indicating that ASD is under diagnosed in black families. A majority of respondents completing the screening on the app were doing so for their male children (gender box plots), also aligning with current research and reporting trends. A normal distribution between age and QChat scores were observed (smoothed plot).
+
+# **References**
+
+Hoangami, H. P., Sandberg, N., Trinkl, J. Johnston, T. (2022). Racial and ethnic differences in rates and age diagnosis of autism spectrum disorder. *Pediatrics*, *5*(10):e2239604.
+
+Kanner, L. (1943). Autistic disturbances of affective contact. *Nervous Child*, 2, 217-250.
+
+Maenner, M. J., Shaw, K. A., Bakian, A. V., et al., (2021) Prevalence and Characteristics of Autism Spectrum Disorder Among Children Aged 8 Years --- Autism and Developmental Disabilities Monitoring Network, 11 Sites, United States. *Morbidity and Mortality Weekly Report,* *70*(11), 1--16.
+
+Robinson, E. B., Lichtenstein, P., Anckarsäter, H., Happé, F., Ronald, A. (2013). Examining and interpreting the female protective effect against autistic behavior. *Proceedings of the National Academy of Sciences in the United States of America*, *26*(110), 5258-62.
+
+\`\`\`
